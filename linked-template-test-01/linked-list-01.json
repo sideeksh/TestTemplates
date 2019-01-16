@@ -1,0 +1,20 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "name": {
+      "type": "String"
+    }
+  },
+  "variables": {
+      "listVar7":  "[listkeys(resourceId('test01pb', 'Microsoft.Storage/storageAccounts', 'test01pbdiag114'), '2018-07-01')]"
+  },
+  "resources": [
+  ],
+  "outputs": {
+    "listOut": {
+      "value": "[variables('listVar7')]",
+      "type": "object"
+    }
+  }
+}
