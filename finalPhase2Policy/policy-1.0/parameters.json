@@ -1,0 +1,92 @@
+{
+    "cacheStorageAccountName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Cache StorageAccount Name",
+            "description": null
+        }
+    },
+    "recoveryNetworkName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Recovery Network Name",
+            "description": null
+        }
+    },
+    "replicationPolicyName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Replication Policy Name",
+            "description": null
+        }
+    },
+    "sourceContainerName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Source Container Name",
+            "description": null
+        }
+    },
+    "sourceFabricName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Source Fabric Name",
+            "description": null
+        }
+    },
+    "sourceRegion": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Source Region",
+            "description": null,
+            "strongType": "location"
+        }
+    },
+    "targetContainerName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Target Container Name",
+            "description": null
+        }
+    },
+    "targetFabricName": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Target Fabric Name",
+            "description": null
+        }
+    },
+    "targetRegion": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Target Region",
+            "description": null,
+            "strongType": "location"
+        }
+    },
+    "targetResourceGroupId": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Target ResourceGroup Id",
+            "description": null,
+            "assignPermissions": true
+        }
+    },
+    "vaultId": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Vault",
+            "description": null,
+            "strongType": "Microsoft.RecoveryServices/vaults"
+        }
+    },
+    "vaultResourceGroupId": {
+        "type": "String",
+        "metadata": {
+            "displayName": "Vault ResourceGroup Id",
+            "description": null,
+            "assignPermissions": true
+        }
+    }
+
+}
