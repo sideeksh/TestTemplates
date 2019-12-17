@@ -93,7 +93,7 @@
                         },
                         "variables": {
                             "avSetApiVersion": "2019-03-01",
-                            "portalLinkPrefix": "https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource",
+                            "portalLinkPrefix": "https://portal.azure.com/#@microsoft.onmicrosoft.com/resource",
                             "siteRecoveryJobs": "replicationJobs",
                             "avSetTemplateName": "[concat('targetAvailabilitySet-', last(split(parameters('vmId'), '/')),'-Template')]",
                             "sourceResourceGroupId": "[resourceGroup().id]",
@@ -181,7 +181,7 @@
                         ],
                         "outputs": {
                             "replicationJobsUrl": {
-                                "value": "[concat(variables('portalLinkPrefix'), variables('vaultId'), variables('siteRecoveryJobs'))]",
+                                "value": "[concat(variables('portalLinkPrefix'), variables('vaultId'), '/', variables('siteRecoveryJobs'))]",
                                 "type": "string"
                             },
                             "availabilitySetUrl": {
