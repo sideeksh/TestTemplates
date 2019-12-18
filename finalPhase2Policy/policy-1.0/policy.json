@@ -32,7 +32,6 @@
                 "like": "ASR-Protect-*"
             },
             "deployment": {
-                "name": "[concat('EnableDR-Policy-', resourcegroup().Name, '-', field('name'), '-', guid(field('Microsoft.Compute/virtualMachines/vmId')))]",
                 "properties": {
                     "mode": "incremental",
                     "template": {
@@ -96,6 +95,7 @@
                             "portalLinkPrefix": "https://portal.azure.com/#@microsoft.onmicrosoft.com/resource",
                             "siteRecoveryJobs": "replicationJobs",
                             "avSetTemplateName": "[concat('targetAvailabilitySet-', last(split(parameters('vmId'), '/')),'-Template')]",
+                            "replicationProtectedItemTemplateName": "concat('EnableDR-Policy-', resourcegroup().Name, '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))",
                             "sourceResourceGroupId": "[resourceGroup().id]",
                             "vaultId": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.RecoveryServices/vaults', parameters('vaultName'))]",
                             "protectedItemName": "[concat(parameters('vaultName'),'/',parameters('sourceFabricName'),'/',parameters('sourceContainerName'),'/policy-',guid(resourceGroup().id, deployment().name))]",
@@ -146,37 +146,55 @@
                                 }
                             },
                             {
-                                "condition": "[lessOrEquals(length(reference(variables('eligibilityResultsId'), '2018-07-10').errors), int('0')))]",
-                                "type": "Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems",
-                                "name": "[variables('protectedItemName')]",
-                                "apiVersion": "[parameters('apiVersion')]",
+                                "apiVersion": "2017-05-10",
+                                "name": "[variables('replicationProtectedItemTemplateName')]",
+                                "type": "Microsoft.Resources/deployments",
+                                "resourceGroup": "[parameters('vaultResourceGroupName')]",
                                 "properties": {
-                                    "policyId": "[variables('replicationPolicyId')]",
-                                    "protectableItemId": "",
-                                    "providerSpecificDetails": {
-                                        "instanceType": "A2A",
-                                        "fabricObjectId": "[parameters('vmId')]",
-                                        "recoveryResourceGroupId": "[variables('targetResourceGroupId')]",
-                                        "recoveryContainerId": "[variables('targetContainerId')]",
-                                        "recoveryAvailabilitySetId": "[variables('recoveryAvSetId')]",
-                                        "recoveryAzureNetworkId": "[variables('recoveryNetworkId')]",
-                                        "vmDisks": [ ],
-                                        "copy": [
+                                    "mode": "Incremental",
+                                    "template": {
+                                        "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                                        "contentVersion": "1.0.0.0",
+                                        "parameters": { },
+                                        "variables": { },
+                                        "resources": [
                                             {
-                                                "name": "vmManagedDisks",
-                                                "count": "[length(variables('diskIds'))]",
-                                                "input": {
-                                                    "diskId": "[variables('diskIds')[copyIndex(variables('diskType'))]]",
-                                                    "primaryStagingAzureStorageAccountId": "[variables('cacheStorageAccountId')]",
-                                                    "recoveryResourceGroupId": "[variables('targetResourceGroupId')]"
-                                                }
+                                                "condition": "[lessOrEquals(length(reference(variables('eligibilityResultsId'), '2018-07-10').errors), int('0')))]",
+                                                "type": "Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems",
+                                                "name": "[variables('protectedItemName')]",
+                                                "apiVersion": "[parameters('apiVersion')]",
+                                                "properties": {
+                                                    "policyId": "[variables('replicationPolicyId')]",
+                                                    "protectableItemId": "",
+                                                    "providerSpecificDetails": {
+                                                        "instanceType": "A2A",
+                                                        "fabricObjectId": "[parameters('vmId')]",
+                                                        "recoveryResourceGroupId": "[variables('targetResourceGroupId')]",
+                                                        "recoveryContainerId": "[variables('targetContainerId')]",
+                                                        "recoveryAvailabilitySetId": "[variables('recoveryAvSetId')]",
+                                                        "recoveryAzureNetworkId": "[variables('recoveryNetworkId')]",
+                                                        "vmDisks": [ ],
+                                                        "copy": [
+                                                            {
+                                                                "name": "vmManagedDisks",
+                                                                "count": "[length(variables('diskIds'))]",
+                                                                "input": {
+                                                                    "diskId": "[variables('diskIds')[copyIndex(variables('diskType'))]]",
+                                                                    "primaryStagingAzureStorageAccountId": "[variables('cacheStorageAccountId')]",
+                                                                    "recoveryResourceGroupId": "[variables('targetResourceGroupId')]"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                },
+                                                "dependsOn": [
+                                                    "[variables('avSetTemplateName')]"
+                                                ]
                                             }
                                         ]
-                                    }
-                                },
-                                "dependsOn": [
-                                    "[variables('avSetTemplateName')]"
-                                ]
+                                    },
+                                    "parameters": { }
+                                }
                             }
                         ],
                         "outputs": {
