@@ -95,7 +95,7 @@
               "portalLinkPrefix": "https://portal.azure.com/#@microsoft.onmicrosoft.com/resource",
               "siteRecoveryJobs": "replicationJobs",
               "avSetTemplateName": "[concat('targetAvailabilitySet-', last(split(parameters('vmId'), '/')),'-Template')]",
-              "replicationProtectedItemTemplateName": "concat('EnableDR-Policy-', resourcegroup().Name, '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))",
+              "replicationProtectedItemTemplateName": "[concat('EnableDR-Policy-', parameters('sourceResourceGroupName'), '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))]",
               "sourceResourceGroupId": "[resourceGroup().id]",
               "vaultId": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.RecoveryServices/vaults', parameters('vaultName'))]",
               "protectedItemName": "[concat(parameters('vaultName'),'/',parameters('sourceFabricName'),'/',parameters('sourceContainerName'),'/policy-',guid(resourceGroup().id, deployment().name))]",
