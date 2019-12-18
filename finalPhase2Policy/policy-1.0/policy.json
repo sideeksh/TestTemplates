@@ -96,6 +96,7 @@
               "siteRecoveryJobs": "replicationJobs",
               "avSetTemplateName": "[concat('targetAvailabilitySet-', last(split(parameters('vmId'), '/')),'-Template')]",
               "replicationProtectedItemTemplateName": "[concat('EnableDR-Policy-', parameters('sourceResourceGroupName'), '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))]",
+              "replicatedProtectedItemTemplateName64": "[substring(variables('replicationProtectedItemTemplateName'), 0, 64)]",
               "sourceResourceGroupId": "[resourceGroup().id]",
               "vaultId": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.RecoveryServices/vaults', parameters('vaultName'))]",
               "protectedItemName": "[concat(parameters('vaultName'),'/',parameters('sourceFabricName'),'/',parameters('sourceContainerName'),'/policy-',guid(resourceGroup().id, deployment().name))]",
@@ -147,7 +148,7 @@
               },
               {
                 "apiVersion": "2017-05-10",
-                "name": "[variables('replicationProtectedItemTemplateName')]",
+                "name": "[variables('replicationProtectedItemTemplateName64')]",
                 "type": "Microsoft.Resources/deployments",
                 "resourceGroup": "[parameters('vaultResourceGroupName')]",
                 "properties": {
@@ -179,7 +180,7 @@
                                 "name": "vmManagedDisks",
                                 "count": "[length(variables('diskIds'))]",
                                 "input": {
-                                  "diskId": "[variables('diskIds')[copyIndex(variables('diskType'))]]",
+                                  "diskId": "[variables('diskIds')[copyIndex('vmManagedDisks')]]",
                                   "primaryStagingAzureStorageAccountId": "[variables('cacheStorageAccountId')]",
                                   "recoveryResourceGroupId": "[variables('targetResourceGroupId')]"
                                 }
