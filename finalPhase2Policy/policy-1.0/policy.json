@@ -189,7 +189,21 @@
                           }
                         }
                       }
-                    ]
+                    ],
+                    "outputs": {
+                      "replicationJobsUrl": {
+                        "value": "[concat(variables('portalLinkPrefix'), variables('vaultId'), '/', variables('siteRecoveryJobs'))]",
+                        "type": "string"
+                      },
+                      "availabilitySetUrl": {
+                        "value": "[if(empty(parameters('avSetId')), '', concat(variables('portalLinkPrefix'), variables('recoveryAvSetId')))]",
+                        "type": "string"
+                      },
+                      "replicationEligibilityResults": {
+                        "value": "[reference(variables('eligibilityResultsId'), '2018-07-10', 'Full')]",
+                        "type": "Object"
+                      }
+                    }
                   },
                   "parameters": { }
                 },
@@ -199,18 +213,6 @@
               }
             ],
             "outputs": {
-              "replicationJobsUrl": {
-                "value": "[concat(variables('portalLinkPrefix'), variables('vaultId'), '/', variables('siteRecoveryJobs'))]",
-                "type": "string"
-              },
-              "availabilitySetUrl": {
-                "value": "[if(empty(parameters('avSetId')), '', concat(variables('portalLinkPrefix'), variables('recoveryAvSetId')))]",
-                "type": "string"
-              },
-              "replicationEligibilityResults": {
-                "value": "[reference(variables('eligibilityResultsId'), '2018-07-10', 'Full')]",
-                "type": "Object"
-              }
             }
           },
           "parameters": {
