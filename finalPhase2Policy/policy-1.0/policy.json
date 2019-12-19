@@ -22,7 +22,6 @@
   "then": {
     "effect": "deployIfNotExists",
     "details": {
-      "resourceGroupName": "[last(split(parameters('vaultResourceGroupId'), '/'))]",
       "type": "Microsoft.Resources/links",
       "roleDefinitionIds": [
         "/providers/Microsoft.Authorization/roleDefinitions/8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
@@ -94,8 +93,8 @@
               "avSetApiVersion": "2019-03-01",
               "portalLinkPrefix": "https://portal.azure.com/#@microsoft.onmicrosoft.com/resource",
               "siteRecoveryJobs": "replicationJobs",
-              "avSetTemplateName": "[concat('targetAvailabilitySet-', last(split(parameters('vmId'), '/')),'-Template')]",
-              "replicationProtectedItemTemplateName": "[concat('EnableDR-Policy-', parameters('sourceResourceGroupName'), '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))]",
+              "avSetTemplateName": "[concat('RecoveryAvSet-', last(split(parameters('vmId'), '/')))]",
+              "replicationProtectedItemTemplateName": "[concat('ASR-', parameters('sourceResourceGroupName'), '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))]",
               "replicationProtectedItemTemplateName64": "[substring(variables('replicationProtectedItemTemplateName'), 0, 64)]",
               "sourceResourceGroupId": "[resourceGroup().id]",
               "vaultId": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.RecoveryServices/vaults', parameters('vaultName'))]",
