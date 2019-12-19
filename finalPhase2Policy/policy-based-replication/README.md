@@ -49,6 +49,8 @@ The following resources are created:
 All the important details are written in a file (at script location).
 The user is also provided with important URLs and next steps.
 
+![Output Snip](output-snip.png)
+
 ## parameters
 - name="_subscriptionId_" - Mandatory parameter defining the subscription Id.
 - name="_sourceResourceGroupName_" - Mandatory parameter defining the source resource group name. The policy will be deployed at this resource group's scope.
