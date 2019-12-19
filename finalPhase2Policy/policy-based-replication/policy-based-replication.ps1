@@ -1191,6 +1191,44 @@ function Log-PolicyAssignment()
 #EndRegion
 
 ### <summary>
+### Assigns a new Owner role to the managed identity.
+### </summary>
+function Add-RoleAssignments()
+{
+    $objectId = $policyAssignment.Identity.principalId
+    $retryLimit = 6
+    $retryCount = 0
+
+    # Time delay between creation of service principal and delegation of role is causing the
+    # NotFound error. Thus, introducing a sleep with limit (30s) to ensure service principal
+    # exists.
+    Write-Host -ForegroundColor Green "Waiting for the managed identity ("$objectId") creation to" `
+        "complete."
+    $servicePrincipal = Get-AzADServicePrincipal -ObjectId $objectId
+
+    while (($null -eq $servicePrincipal) -and ($retryCount -lt $retryLimit))
+    {
+        $retryCount++
+        Start-Sleep -Seconds 5
+
+        $servicePrincipal = Get-AzADServicePrincipal -ObjectId $objectId
+    }
+
+    if ($null -ne $servicePrincipal)
+    {
+        Write-Host -ForegroundColor Green "Creating new role assignments for managed identity" `
+            "with PrincipalId:" $objectId "`n"
+
+        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+            $sourceResourceGroupName -RoleDefinitionName Owner
+        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+            $targetResourceGroupName -RoleDefinitionName Owner
+        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+            $vaultResourceGroupName -RoleDefinitionName Owner
+    }
+}
+
+### <summary>
 ### Creates a new policy definition, if necessary.
 ### </summary>
 ### <return>Policy definition.</return>
@@ -1275,6 +1313,7 @@ function New-PolicyAssignment()
         -DisplayName $policyAssignmentName
 
     Log-PolicyAssignment
+    Add-RoleAssignments
 
     return $policyAssignment
 }
@@ -1329,9 +1368,7 @@ function Log-AdditionalURLs()
 function Log-NextSteps()
 {
     $notes = "`n1. Go to the Detailed Policy Assignment Compliance page using the URL given above."
-    $notes += "`n2. Go to the 'Edit Assignment' page and re-save it to ensure that the managed " + `
-        "identity has appropriate permissions (Owner)."
-    $notes += "`n3. Wait ~15 mins for the policy to start."
+    $notes += "`n2. Wait ~15 mins for the policy to start."
 
     Write-Host -ForegroundColor Green "`nNext Steps:`n"$notes
 
