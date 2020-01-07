@@ -16,6 +16,10 @@
       {
         "field": "Microsoft.Compute/virtualMachines/zones",
         "exists": "false"
+      },
+      {
+        "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.encryptionSettings",
+        "exists": "false"
       }
     ]
   },
@@ -98,7 +102,7 @@
               "replicationProtectedItemTemplateName64": "[substring(variables('replicationProtectedItemTemplateName'), 0, 64)]",
               "sourceResourceGroupId": "[resourceGroup().id]",
               "vaultId": "[resourceId(parameters('vaultResourceGroupName'), 'Microsoft.RecoveryServices/vaults', parameters('vaultName'))]",
-              "protectedItemName": "[concat(parameters('vaultName'),'/',parameters('sourceFabricName'),'/',parameters('sourceContainerName'),'/policy-',guid(resourceGroup().id, deployment().name))]",
+              "protectedItemName": "[concat(parameters('vaultName'), '/', parameters('sourceFabricName'), '/', parameters('sourceContainerName'), '/', guid(resourceGroup().id, deployment().name), '-policy')]",
               "recoveryNetworkId": "[resourceId(parameters('targetResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('recoveryNetworkName'))]",
               "cacheStorageAccountId": "[resourceId(parameters('sourceResourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('cacheStorageAccountName'))]",
               "diskIds": "[concat(array(parameters('osDiskId')), array(parameters('dataDiskIds').rawValue))]",
@@ -107,7 +111,7 @@
               "recoveryAvSetId": "[if(empty(parameters('avSetId')), '', resourceId( parameters('targetResourceGroupName'), 'Microsoft.Compute/availabilitySets', variables('recoveryAvSetName')))]",
               "armIdSubscriptionPrefix": "[substring(variables('sourceResourceGroupId'), 0, lastIndexOf(variables('sourceResourceGroupId'), '/'))]",
               "targetResourceGroupId": "[concat(variables('armIdSubscriptionPrefix'), '/', parameters('targetResourceGroupName'))]",
-              "targetContainerId": "[concat(variables('vaultId'), '/replicationFabrics/',parameters('targetFabricName'),'/replicationProtectionContainers/',parameters('targetContainerName'))]",
+              "targetContainerId": "[concat(variables('vaultId'), '/replicationFabrics/', parameters('targetFabricName'), '/replicationProtectionContainers/', parameters('targetContainerName'))]",
               "eligibilityResultsId": "[extensionResourceId(parameters('vmId'), 'Microsoft.RecoveryServices/replicationEligibilityResults', 'default')]"
             },
             "resources": [
@@ -199,7 +203,7 @@
                         "type": "string"
                       },
                       "replicationEligibilityResults": {
-                        "value": "[reference(variables('eligibilityResultsId'), '2018-07-10', 'Full')]",
+                        "value": "[reference(variables('eligibilityResultsId'), '2018-07-10')]",
                         "type": "Object"
                       }
                     }
