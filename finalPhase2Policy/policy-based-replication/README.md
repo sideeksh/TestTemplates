@@ -45,6 +45,9 @@ The following resources are created:
       - checking if any policy assignments already made with the above policy definition and same scope (source resource group).
       - if above shows even 1, the user is prompted regarding this and asked whether they would like to continue or abort.
       - create a new policy assignment with important information in description.
+   - role assignments
+      - waiting for the service principal creation to be completed.
+      - assigning role assignments (Owner) for source resource group, target resource group, and vault resource group.
 
 All the important details are written in a file (at script location).
 The user is also provided with important URLs and next steps.
