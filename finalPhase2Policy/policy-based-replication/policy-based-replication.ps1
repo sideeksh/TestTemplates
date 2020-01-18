@@ -1217,8 +1217,14 @@ function Add-RoleAssignments()
 
     if ($null -ne $servicePrincipal)
     {
-        Write-Host -ForegroundColor Green "Creating new role assignments for managed identity" `
-            "with PrincipalId:" $objectId "`n"
+        $message = "Creating new role assignments for managed identity with PrincipalId:" + `
+            $objectId + "`n"
+
+        Write-Host -ForegroundColor Green $message        
+        $OutputLogger.Log(
+            $MyInvocation,
+            $message,
+            [LogType]::OUTPUT)
 
         $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
             $sourceResourceGroupName -RoleDefinitionName Owner
