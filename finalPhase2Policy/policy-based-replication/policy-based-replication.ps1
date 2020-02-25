@@ -1196,11 +1196,12 @@ function Log-PolicyAssignment()
 function Add-RoleAssignments()
 {
     $objectId = $policyAssignment.Identity.principalId
-    $retryLimit = 6
+    $sleepTimeInSeconds = 10
+    $retryLimit = 12
     $retryCount = 0
 
     # Time delay between creation of service principal and delegation of role is causing the
-    # NotFound error. Thus, introducing a sleep with limit (30s) to ensure service principal
+    # NotFound error. Thus, introducing a sleep with limit (120s) to ensure service principal
     # exists.
     Write-Host -ForegroundColor Green "Waiting for the managed identity ("$objectId") creation to" `
         "complete."
@@ -1209,15 +1210,21 @@ function Add-RoleAssignments()
     while (($null -eq $servicePrincipal) -and ($retryCount -lt $retryLimit))
     {
         $retryCount++
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds $sleepTimeInSeconds
 
         $servicePrincipal = Get-AzADServicePrincipal -ObjectId $objectId
     }
 
     if ($null -ne $servicePrincipal)
     {
-        Write-Host -ForegroundColor Green "Creating new role assignments for managed identity" `
-            "with PrincipalId:" $objectId "`n"
+        $message = "Creating new role assignments for managed identity with PrincipalId:" + `
+            $objectId + "`n"
+
+        Write-Host -ForegroundColor Green $message        
+        $OutputLogger.Log(
+            $MyInvocation,
+            $message,
+            [LogType]::OUTPUT)
 
         $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
             $sourceResourceGroupName -RoleDefinitionName Owner
