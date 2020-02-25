@@ -95,8 +95,11 @@
             },
             "variables": {
               "avSetApiVersion": "2019-03-01",
+              "vmApiVersion": "2019-07-01",
               "portalLinkPrefix": "https://portal.azure.com/#@microsoft.onmicrosoft.com/resource",
               "siteRecoveryJobs": "replicationJobs",
+              "vmDataDiskIds": "[array(parameters('dataDiskIds').rawValue)]",
+              "vmDiskCount": "[add(length(variables('vmDataDiskIds')), int(1))]",
               "avSetTemplateName": "[concat('RecoveryAvSet-', last(split(parameters('vmId'), '/')))]",
               "replicationProtectedItemTemplateName": "[concat('ASR-', parameters('sourceResourceGroupName'), '-', last(split(parameters('vmId'), '/')), '-', guid(parameters('vmId')))]",
               "replicationProtectedItemTemplateName64": "[substring(variables('replicationProtectedItemTemplateName'), 0, 64)]",
@@ -181,9 +184,9 @@
                             "copy": [
                               {
                                 "name": "vmManagedDisks",
-                                "count": "[length(variables('diskIds'))]",
+                                "count": "[variables('vmDiskCount')]",
                                 "input": {
-                                  "diskId": "[variables('diskIds')[copyIndex('vmManagedDisks')]]",
+                                  "diskId": "[if(equals(copyIndex('vmManagedDisks'), int(0)), reference(parameters('vmId'), variables('vmApiVersion')).storageProfile.osDisk.managedDisk.Id, variables('vmDataDiskIds')[sub(copyIndex('vmManagedDisks'), int(1))])]",
                                   "primaryStagingAzureStorageAccountId": "[variables('cacheStorageAccountId')]",
                                   "recoveryResourceGroupId": "[variables('targetResourceGroupId')]"
                                 }
@@ -215,8 +218,7 @@
                 ]
               }
             ],
-            "outputs": {
-            }
+            "outputs": { }
           },
           "parameters": {
             "apiVersion": {
