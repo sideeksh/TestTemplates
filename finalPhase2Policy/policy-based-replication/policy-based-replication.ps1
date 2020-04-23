@@ -560,9 +560,9 @@ class Errors
         "`nPlease create role assignments for the target resource group, source resource " + `
         "group and vault resource group manually." + `
         "`nThis can be done through the following steps - " + `
-        "`n1. Azure Portal - Visit the Policy Compliance page (link provided under Additional " + `
-        "Urls), go to Edit Assignment option, and Review and Save. This will trigger creation " + `
-        "again." + `
+        "`n1. Azure Portal - Visit the Detailed Policy Assignment Compliance page " + `
+        "(link provided under Additional Urls), go to Edit Assignment option, and Review and " + `
+        "Save. This will trigger creation again." + `
         "`n2. Azure Powershell - Run the following cmdlet once for each resource group. " + `
         "`n'New-AzRoleAssignment -ObjectId $principalId -ResourceGroupName " + `
         "<resourcegroupname> -RoleDefinitionName $roleName"
@@ -1431,11 +1431,11 @@ function Log-AdditionalURLs()
         $policyParams[[PolicyParameter]::vaultId] + "/" + [ConstantStrings]::replicationJobs
 
     $urlOutput = "`nPolicy Compliance Page: " + [ConstantStrings]::portalPolicyCompliancePageLink
-    $urlOutput += "`n`nDetailed Policy Assignment Compliance Page: " + $assignmentCompliancePage
-    $urlOutput += "`n`nVault ResourceGroup Deployments: " + $vaultResourceGroupDeploymentUrl
-    $urlOutput += "`n`nAvSet ResourceGroup Deployments: " + $targetResourceGroupDeploymentUrl
-    $urlOutput += "`n`nReplicated Items List: " + $replicatedItemsListUrl
-    $urlOutput += "`n`nSite Recovery Jobs: " + $replicationJobsUrl
+    $urlOutput += "`nDetailed Policy Assignment Compliance Page: " + $assignmentCompliancePage
+    $urlOutput += "`nVault ResourceGroup Deployments: " + $vaultResourceGroupDeploymentUrl
+    $urlOutput += "`nAvSet ResourceGroup Deployments: " + $targetResourceGroupDeploymentUrl
+    $urlOutput += "`nReplicated Items List: " + $replicatedItemsListUrl
+    $urlOutput += "`nSite Recovery Jobs: " + $replicationJobsUrl
     $urlOutput += "`n"
 
 
