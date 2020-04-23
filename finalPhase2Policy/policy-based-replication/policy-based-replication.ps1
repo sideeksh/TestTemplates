@@ -1391,6 +1391,24 @@ function New-PolicyAssignment()
 #Region Misc
 
 ### <summary>
+### Logging the parameters passed during this script run.
+### </summary>
+function Log-ScriptParameters()
+{
+    $commandName = $PSCmdlet.MyInvocation.InvocationName;
+    $parameterList = (Get-Command -Name $CommandName).Parameters;
+
+    foreach ($parameter in $parameterList) {
+        $parameters = Get-Variable -Name $Parameter.Values.Name -ErrorAction SilentlyContinue;
+    }
+
+    $OutputLogger.LogObject(
+        $MyInvocation,
+        $parameters,
+        [LogType]::INFO)
+}
+
+### <summary>
 ### Logging all additional helpful URLs.
 ### </summary>
 function Log-AdditionalURLs()
@@ -1496,6 +1514,8 @@ $OutputLogger.Log(
 
 try
 {
+    Log-ScriptParameters
+    
     New-PolicyBasedReplicationSetup
 }
 catch
