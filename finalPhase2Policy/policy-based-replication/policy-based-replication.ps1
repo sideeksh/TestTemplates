@@ -152,19 +152,24 @@ Enum LogType
     ERROR = 1
 
     ### <summary>
+    ###  Log type is warning.
+    ### </summary>
+    WARNING = 2
+
+    ### <summary>
     ###  Log type is debug.
     ### </summary>
-    DEBUG = 2
+    DEBUG = 3
 
     ### <summary>
     ###  Log type is information.
     ### </summary>
-    INFO = 3
+    INFO = 4
 
     ### <summary>
     ###  Log type is output.
     ### </summary>
-    OUTPUT = 4
+    OUTPUT = 5
 }
 
 ### <summary>
@@ -537,6 +542,31 @@ class Errors
         return "Aborting policy assignment as the following policy assignments already exist " + `
         "with the same definition and scope - `n" + ($policyAssignmentNames -Join ",`n")
     }
+    
+    ### <summary>
+    ###  Role assignment failure leading to manual creation.
+    ### </summary>
+    ### <param name="principalId">Service principal Id.</param>
+    ### <param name="roleName">The role to be assigned.</param>
+    ### <param name="retryCount">Total retries attempted.</param>
+    ### <return>Error string.</return>
+    static [string] RoleAssignmentFailed(
+        [string] $principalId,
+        [string] $roleName,
+        [int] $retryCount)
+    {
+        return "$roleName role couldn't be assigned to service principal - $principalId." + `
+        "`nAssignment creation couldn't complete successfully after $retryCount retries. " + `
+        "`nPlease create role assignments for the target resource group, source resource " + `
+        "group and vault resource group manually." + `
+        "`nThis can be done through the following steps - " + `
+        "`n1. Azure Portal - Visit the Policy Compliance page (link provided under Additional " + `
+        "Urls), go to Edit Assignment option, and Review and Save. This will trigger creation " + `
+        "again." + `
+        "`n2. Azure Powershell - Run the following cmdlet once for each resource group. " + `
+        "`n'New-AzRoleAssignment -ObjectId $principalId -ResourceGroupName " + `
+        "<resourcegroupname> -RoleDefinitionName $roleName"
+    }
 }
 #EndRegion
 
@@ -898,7 +928,7 @@ function New-ReplicationProtectionContainer()
     if ($null -eq $sourceContainer)
     {
         Write-Host -ForegroundColor Green "Creating a new replication container -" `
-            $sourceContainerName", under fabric - '"$sourceFabric.Name"'."
+            $sourceContainerName", under fabric - "$sourceFabric.Name"."
 
         $isNewSourceContainer = $true
         $sourceJob = New-AzRecoveryServicesAsrProtectionContainer -Name $sourceContainerName `
@@ -908,7 +938,7 @@ function New-ReplicationProtectionContainer()
     if ($null -eq $targetContainer)
     {
         Write-Host -ForegroundColor Green "Creating a new replication container -" `
-            $targetContainerName", under fabric - '"$targetFabric.Name"'."
+            $targetContainerName", under fabric - "$targetFabric.Name"."
 
         $isNewTargetContainer = $true
         $targetJob = New-AzRecoveryServicesAsrProtectionContainer -Name $targetContainerName `
@@ -1197,11 +1227,11 @@ function Add-RoleAssignments()
 {
     $objectId = $policyAssignment.Identity.principalId
     $sleepTimeInSeconds = 10
-    $retryLimit = 12
+    $retryLimit = 15
     $retryCount = 0
 
     # Time delay between creation of service principal and delegation of role is causing the
-    # NotFound error. Thus, introducing a sleep with limit (120s) to ensure service principal
+    # NotFound error. Thus, introducing a sleep with limit (150s) to ensure service principal
     # exists.
     Write-Host -ForegroundColor Green "Waiting for the managed identity ("$objectId") creation to" `
         "complete."
@@ -1217,6 +1247,9 @@ function Add-RoleAssignments()
 
     if ($null -ne $servicePrincipal)
     {
+        $roleCreationLimit = 3
+        $roleCreationCount = 0
+        $isRoleCreationRequired = $true
         $message = "Creating new role assignments for managed identity with PrincipalId:" + `
             $objectId + "`n"
 
@@ -1224,14 +1257,41 @@ function Add-RoleAssignments()
         $OutputLogger.Log(
             $MyInvocation,
             $message,
-            [LogType]::OUTPUT)
+            [LogType]::INFO)
 
-        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
-            $sourceResourceGroupName -RoleDefinitionName Owner
-        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
-            $targetResourceGroupName -RoleDefinitionName Owner
-        $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
-            $vaultResourceGroupName -RoleDefinitionName Owner
+        while ($isRoleCreationRequired -and ($roleCreationCount -lt $roleCreationLimit))
+        {
+            $roleCreationCount++
+
+            try
+            {
+                $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+                    $sourceResourceGroupName -RoleDefinitionName Owner
+                $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+                    $targetResourceGroupName -RoleDefinitionName Owner
+                $suppressOutput = New-AzRoleAssignment -ObjectId $objectId -ResourceGroupName `
+                    $vaultResourceGroupName -RoleDefinitionName Owner
+                $isRoleCreationRequired = $false
+            }
+            catch
+            {
+                $message = "Role assignment addition failed due to -"
+                $message += "`n$(Out-String -InputObject $PSItem)`n"
+                $message += "Retrying role assignment addition."
+                
+                Write-Host -ForegroundColor Yellow -BackgroundColor Black $message 
+            
+                $OutputLogger.Log($MyInvocation, $message, [LogType]::WARNING)
+            }
+        }
+
+        if ($isRoleCreationRequired)
+        {
+            $message = [Errors]::RoleAssignmentFailed($objectId, "Owner", $roleCreationCount)
+            
+            Write-Host -ForegroundColor Yellow -BackgroundColor Black $message 
+
+        }
     }
 }
 
@@ -1353,11 +1413,11 @@ function Log-AdditionalURLs()
         $policyParams[[PolicyParameter]::vaultId] + "/" + [ConstantStrings]::replicationJobs
 
     $urlOutput = "`nPolicy Compliance Page: " + [ConstantStrings]::portalPolicyCompliancePageLink
-    $urlOutput += "`nDetailed Policy Assignment Compliance Page: " + $assignmentCompliancePage
-    $urlOutput += "`nVault ResourceGroup Deployments: " + $vaultResourceGroupDeploymentUrl
-    $urlOutput += "`nAvSet ResourceGroup Deployments: " + $targetResourceGroupDeploymentUrl
-    $urlOutput += "`nReplicated Items List: " + $replicatedItemsListUrl
-    $urlOutput += "`nSite Recovery Jobs: " + $replicationJobsUrl
+    $urlOutput += "`n`nDetailed Policy Assignment Compliance Page: " + $assignmentCompliancePage
+    $urlOutput += "`n`nVault ResourceGroup Deployments: " + $vaultResourceGroupDeploymentUrl
+    $urlOutput += "`n`nAvSet ResourceGroup Deployments: " + $targetResourceGroupDeploymentUrl
+    $urlOutput += "`n`nReplicated Items List: " + $replicatedItemsListUrl
+    $urlOutput += "`n`nSite Recovery Jobs: " + $replicationJobsUrl
     $urlOutput += "`n"
 
 
